@@ -491,51 +491,61 @@ class HtmlEditor {
 
     private function generateAbsoluteXpath() {
         $elem = $this->dom;
-
+    
         // Check if the input is a DOMDocument
         if ($elem instanceof DOMDocument) {
             return '/';
         }
-
+    
         $xpath = '';
-
-        // Start from the given element and traverse up the tree
+    
+        // Start from the given node and traverse up the tree
         while ($elem !== null) {
-            $elementXPath = $elem->localName;
-
-            // If the element has an ID, use it in the XPath query
-            if (!$elem instanceof DOMDocument && $elem->hasAttribute('id')) {
-                $elementXPath .= '[@id="' . $elem->getAttribute('id') . '"]';
-                break; // Stop if we found an element with an ID
-            }
-
-            $siblings = 1;
-            $previous = $elem->previousSibling;
-
-            // Count preceding sibling elements with the same tag name
-            while ($previous !== null) {
-                if ($previous instanceof DOMElement && $previous->localName === $elem->localName) {
-                    $siblings++;
+            $elementXPath = '';
+    
+            // Check if the node is an element and has an ID
+            if ($elem instanceof DOMElement && $elem->hasAttribute('id')) {
+                $elementXPath = $elem->localName . '[@id="' . $elem->getAttribute('id') . '"]';
+            } elseif ($elem instanceof DOMText) {
+                // If it's a text node, include the position among siblings
+                $siblings = 1;
+                $previous = $elem->previousSibling;
+    
+                while ($previous !== null) {
+                    if ($previous instanceof DOMText) {
+                        $siblings++;
+                    }
+    
+                    $previous = $previous->previousSibling;
                 }
-
-                $previous = $previous->previousSibling;
+    
+                $elementXPath = 'text()[' . $siblings . ']';
+            } elseif ($elem instanceof DOMElement) {
+                // For regular elements, include the position among siblings
+                $siblings = 1;
+                $previous = $elem->previousSibling;
+    
+                while ($previous !== null) {
+                    if ($previous instanceof DOMElement && $previous->localName === $elem->localName) {
+                        $siblings++;
+                    }
+    
+                    $previous = $previous->previousSibling;
+                }
+    
+                $elementXPath = $elem->localName;
+                if ($siblings > 1 || ($siblings == 1 && $elem->nextSibling !== null)) {
+                    $elementXPath .= '[' . $siblings . ']';
+                }
             }
-
-            // Append the position among siblings if there are multiple
-            if ($siblings > 1 || ($siblings == 1 && $elem->nextSibling !== null)) {
-                $elementXPath .= '[' . $siblings . ']';
-            }
-
-            // Prepend the element's XPath to the current XPath
+    
+            // Prepend the node's XPath to the current XPath
             $xpath = '/' . $elementXPath . $xpath;
-
-            // Move up to the parent element
+    
+            // Move up to the parent node
             $elem = $elem->parentNode;
         }
-
-        // Add a leading slash to indicate the root element
-        $xpath = $xpath;
-
+    
         return $xpath;
     }
 }
