@@ -41,7 +41,7 @@ class TestConnection extends TestCase {
         try {
             self::$webDriver->get(self::$url);
             $this->assertTrue(true, 'Connection to ' . self::$url . ' successful!');
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $this->fail('Failed to connect to ' . self::$url . '. Error: ' . $e->getMessage());
         }
     }

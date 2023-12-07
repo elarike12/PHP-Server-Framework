@@ -11,6 +11,8 @@
     },
     "port": 443,
     "ip": "::",
+    "displayPHPErrors": true,
+    "defaultTimeZone": "UTC",
     "websocket": {
         "enabled": true,
         "timeoutSeconds": 600
