@@ -153,24 +153,24 @@ class Framework {
             \OpenSwoole\Core\Psr\Response::emit($response, $this->router->process(ServerRequest::from($request)));
         });
 
-        if (($this->configuration->getConfig('websocket.enabled') ?? false) == true) {
-            $this->server->on('open', function (Server $server, Request $request) {
-                $event = $this->EventDispatcher->dispatch(new WebSocketOpenEvent($server, $request));
-                if ($event->isPropagationStopped()) {
-                    $server->close($request->fd);
-                    return;
-                }
-            });
+        $this->server->on('open', function (Server $server, Request $request) {
+            $event = $this->EventDispatcher->dispatch(new WebSocketOpenEvent($server, $request));
+            if ($event->isPropagationStopped()) {
+                $server->close($request->fd);
+                return;
+            }
+        });
 
-            $this->server->on('message', function (Server $server, Frame $frame) {
+        $this->server->on('message', function (Server $server, Frame $frame) {
+            if (($this->configuration->getConfig('websocket.enabled') ?? false) == true) {
                 $frame = $this->webSocketRegistry->getMessageHandler()->handle($server, $frame);
                 $server->push($frame->fd, $frame->data, $frame->opcode);
-            });
+            }
+        });
 
-            $this->server->on('close', function (Server $server, int $fd) {
-                $this->EventDispatcher->dispatch(new WebSocketCloseEvent($server, $fd));
-            });
-        }
+        $this->server->on('close', function (Server $server, int $fd) {
+            $this->EventDispatcher->dispatch(new WebSocketCloseEvent($server, $fd));
+        });
 
         $this->server->on('Start', function () {
             $this->EventDispatcher->dispatch(new HttpStartEvent($this));
