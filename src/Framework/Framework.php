@@ -86,10 +86,10 @@ class Framework {
             $this->configuration->loadConfiguration(BASE_PATH . '/config_test.json', 'json');
         }
 
-        $errorReporting = (bool) $this->configuration->getConfig('displayPHPErrors') ?? true;
+        $errorReporting = (bool) $this->configuration->getConfig('displayPHPErrors') ?: true;
         $this->logger->log(LogLevel::INFO, 'PHP error reporting: ' . ($errorReporting ? 'true' : 'false'), identifier: 'framework');
         ini_set('display_errors', $errorReporting);
-        $timeZone = $this->configuration->getConfig('defaultTimeZone') ?? 'UTC';
+        $timeZone = $this->configuration->getConfig('defaultTimeZone') ?: 'UTC';
         $this->logger->log(LogLevel::INFO, 'Default timezone: ' . $timeZone, identifier: 'framework');
         date_default_timezone_set($timeZone);
 
