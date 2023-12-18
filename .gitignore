@@ -1,3 +1,5 @@
+docker/*
+!docker/.gitkeep
 modules/*
 !modules/.gitkeep
 vendor/*
